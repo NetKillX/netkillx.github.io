@@ -1,11 +1,13 @@
 # --- Configuration ---
+# Hardcoded download URL and local file name
 $DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download/2.0/main.exe"
 $FileName    = "main.exe"
 # ---------------------
 
-# The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution via iex.
+# The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution.
 & {
     $TempDir = "$env:TEMP"
+    # Local path for the cached executable
     $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
     $ExitCode = 0
     
@@ -16,13 +18,14 @@ $FileName    = "main.exe"
         Write-Host "✅ Found cached file: $FileName. Skipping download." -ForegroundColor Green
     }
     else {
+        # File not found, proceed with download
         $WebClient = New-Object System.Net.WebClient
         
         Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
 
         try {
-            # Ensure modern TLS protocols are enabled for download
-            [Net.ServicePointManager]::SecurityProtocol = [Net.ServiceProtocolType]::Tls12 -bor [Net.ServiceProtocolType]::Tls13
+            # FIX: Correct type name is [Net.SecurityProtocolType]
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
             
             # Download the file
             $WebClient.DownloadFile($DownloadUrl, $ExePath)
@@ -30,7 +33,8 @@ $FileName    = "main.exe"
         }
         catch {
             Write-Host "An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
-            return # Exit the script block on download failure
+            # Exit the script block on download failure
+            return 
         }
     }
 
@@ -39,7 +43,7 @@ $FileName    = "main.exe"
         Write-Host "Executing $FileName in the current terminal..." -ForegroundColor Yellow
         
         try {
-            # Use the call operator (&) to execute the file in the same console window
+            # Use the call operator (&) to execute the file
             & $ExePath
             $ExitCode = $LASTEXITCODE
             Write-Host "Program execution finished. Exit Code: $ExitCode" -ForegroundColor Green
@@ -54,5 +58,6 @@ $FileName    = "main.exe"
         $ExitCode = 1
     }
 
+    # Return the program's exit code to the shell
     exit $ExitCode
 }
