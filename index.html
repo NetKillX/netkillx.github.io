@@ -25,13 +25,7 @@ function Run-AsAdmin {
 
 function Check-Admin {
     if (-not (Is-Admin)) {
-        $choice = Read-Host "Do you want to run this script as administrator? (y/n)"
-        if ($choice -eq 'y') {
-            Run-AsAdmin
-        } else {
-            Write-Host "Running without administrator privileges. Some features may not work." -ForegroundColor Yellow
-            Read-Host "Press any key to continue..."
-        }
+        Run-AsAdmin
     }
 }
 
@@ -52,14 +46,16 @@ function Verify-Key {
 function Load-SavedKey {
     $tempDir = $env:TEMP
     $filePath = Join-Path $tempDir 'key_cache.json'
-    try {
-        $data = Get-Content $filePath | ConvertFrom-Json
-        $key = $data.key
-        $savedTime = $data.time
-        if ((Get-Date).ToUniversalTime().Subtract((Get-Date "1970-01-01").ToUniversalTime()).TotalSeconds - $savedTime -lt 259200) {
-            return $key
+    if (Test-Path $filePath) {
+        try {
+            $data = Get-Content $filePath | ConvertFrom-Json
+            $key = $data.key
+            $savedTime = $data.time
+            if ((Get-Date).ToUniversalTime().Subtract((Get-Date "1970-01-01").ToUniversalTime()).TotalSeconds - $savedTime -lt 259200) {
+                return $key
+            }
+        } catch {
         }
-    } catch {
     }
     return $null
 }
