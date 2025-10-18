@@ -25,7 +25,7 @@ Write-Host ""
     
     # --- Integrity Check and Download Logic ---
     
-    # 1. Check if file exists, and remove it if it does (to ensure a fresh, verifiable download)
+    # 1. Check if file exists, and remove it if it does
     if (Test-Path $ExePath) {
         Write-Host "⚠️ Found existing file. Removing for integrity check..." -ForegroundColor Yellow
         Remove-Item $ExePath -Force -ErrorAction SilentlyContinue
@@ -39,7 +39,8 @@ Write-Host ""
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
         
         # Download the file with progress bar (Invoke-WebRequest)
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing -SkipCertificateCheck | Out-Null
+        # REMOVED: -SkipCertificateCheck (unsupported in this version of IWR)
+        Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing | Out-Null
         
         Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
     }
@@ -57,6 +58,7 @@ Write-Host ""
     }
 
     Write-Host "Verifying file integrity..." -ForegroundColor Yellow
+    # Get-FileHash requires PowerShell v4.0 or later
     $ActualHash = (Get-FileHash -Path $ExePath -Algorithm SHA256).Hash.ToLower()
 
     if ($ActualHash -ne $ExpectedHash.ToLower()) {
