@@ -1,95 +1,425 @@
-# --- Configuration ---
-# Hardcoded download URL and local file name
-$DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download/2.0/main.exe"
-$FileName    = "main.exe"
-$ExpectedHash = "87af6d303dc175ec74dc77a433d1d068573cd09c9ec61fed4da828f04a4d5bd9"
-# ---------------------
+#Requires -Version 5.1
 
-# --- ASCII Art Banner ---
-Write-Host ""
-Write-Host "    _   _________  __   ____  ____  ____  ________    ____  ___    ____  __________ " -ForegroundColor Cyan
-Write-Host "   / | / /_  __/ |/ /   / __ )/ __ \/ __ \/_  __/ /    / __ \/   |  / __ \/ ____/ __ \ " -ForegroundColor Cyan
-Write-Host "  /  |/ / / /  |  </  / __  / / / / / / / / / / /    / / / / /| | / / / / __/ / /_/ / " -ForegroundColor Cyan
-Write-Host " / /|  / / /  /  |  / /_/ / /_/ / /_/ / / / / /___/ /_/ / ___ |/ /_/ / /___/ _, _/ " -ForegroundColor Cyan
-Write-Host "/_/ |_/ /_/  /_/|_| /_____/\____/\____/ /_/ /_____/\____/_/  |_/_____/_____/_/ |_| " -ForegroundColor Cyan
-Write-Host ""
-# ------------------------
+param(
+    [switch]$SkipAuth
+)
 
-# The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution.
-& {
-    $TempDir = "$env:TEMP"
-    $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
-    $ExitCode = 0
-    
-    Write-Host "Local cache path: $ExePath" -ForegroundColor DarkGray
-    
-    # --- Integrity Check and Download Logic ---
-    
-    # 1. Check if file exists, and remove it if it does
-    if (Test-Path $ExePath) {
-        Write-Host "⚠️ Found existing file. Removing for integrity check..." -ForegroundColor Yellow
-        Remove-Item $ExePath -Force -ErrorAction SilentlyContinue
-    }
-    
-    # 2. Download the file
-    Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
+# Set script version
+$version = "2.0"
 
-    try {
-        # Configure security protocol
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-        
-        # Download the file with progress bar (Invoke-WebRequest)
-        # REMOVED: -SkipCertificateCheck (unsupported in this version of IWR)
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing | Out-Null
-        
-        Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
-    }
-    catch {
-        Write-Host "❌ An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
-        $ExitCode = 1
-        return 
-    }
-    
-    # 3. Hash Verification
-    if (-not (Test-Path $ExePath)) {
-        Write-Host "❌ FATAL: Download failed, file was not found at $ExePath." -ForegroundColor Red
-        $ExitCode = 1
-        return
-    }
+# Configure console
+$Host.UI.RawUI.WindowTitle = "Microsoft PowerPoint"
+chcp 65001 | Out-Null
 
-    Write-Host "Verifying file integrity..." -ForegroundColor Yellow
-    # Get-FileHash requires PowerShell v4.0 or later
-    $ActualHash = (Get-FileHash -Path $ExePath -Algorithm SHA256).Hash.ToLower()
-
-    if ($ActualHash -ne $ExpectedHash.ToLower()) {
-        Write-Host "❌ HASH MISMATCH!" -ForegroundColor Red
-        Write-Host "   Expected: $ExpectedHash" -ForegroundColor Red
-        Write-Host "   Actual:   $ActualHash" -ForegroundColor Red
-        Write-Host "   File is corrupted or malicious. ABORTING EXECUTION." -ForegroundColor Red
-        Remove-Item $ExePath -ErrorAction SilentlyContinue
-        $ExitCode = 1
-        return
-    }
-
-    Write-Host "✅ Integrity verified. Hash matches." -ForegroundColor Green
-
-
-    # --- Execution Logic ---
-    if (Test-Path $ExePath) {
-        Write-Host "Executing $FileName in the current terminal..." -ForegroundColor Yellow
-        
-        try {
-            # Use the call operator (&) to execute the file
-            & $ExePath
-            $ExitCode = $LASTEXITCODE
-            Write-Host "Program execution finished. Exit Code: $ExitCode" -ForegroundColor Green
-        }
-        catch {
-            Write-Host "❌ An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
-            $ExitCode = 1
-        }
-    }
-
-    # Return the program's exit code to the shell
-    exit $ExitCode
+function Is-Admin {
+    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
+
+function Run-AsAdmin {
+    $args = $MyInvocation.Line -replace '^.*\s+', ''
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" $args" -Verb RunAs
+    exit
+}
+
+function Check-Admin {
+    if (-not (Is-Admin)) {
+        $choice = Read-Host "Do you want to run this script as administrator? (y/n)"
+        if ($choice -eq 'y') {
+            Run-AsAdmin
+        } else {
+            Write-Host "Running without administrator privileges. Some features may not work." -ForegroundColor Yellow
+            Read-Host "Press any key to continue..."
+        }
+    }
+}
+
+# === Key system config ===
+$WORKER_URL = "https://keyauth.tranlongdo2506.workers.dev"
+$APP_NAME = "netkillx"
+
+function Verify-Key {
+    param([string]$key)
+    try {
+        $response = Invoke-WebRequest -Uri "$WORKER_URL/verify" -Method Get -Body @{app=$APP_NAME; key=$key} -TimeoutSec 5
+        return $response.Content | ConvertFrom-Json
+    } catch {
+        return @{valid=$false; error=$_.Exception.Message}
+    }
+}
+
+function Load-SavedKey {
+    $tempDir = $env:TEMP
+    $filePath = Join-Path $tempDir 'key_cache.json'
+    try {
+        $data = Get-Content $filePath | ConvertFrom-Json
+        $key = $data.key
+        $savedTime = $data.time
+        if ((Get-Date).ToUniversalTime().Subtract((Get-Date "1970-01-01").ToUniversalTime()).TotalSeconds - $savedTime -lt 259200) {
+            return $key
+        }
+    } catch {
+    }
+    return $null
+}
+
+function Save-Key {
+    param([string]$key)
+    $tempDir = $env:TEMP
+    $filePath = Join-Path $tempDir 'key_cache.json'
+    $data = @{key=$key; time=(Get-Date).ToUniversalTime().Subtract((Get-Date "1970-01-01").ToUniversalTime()).TotalSeconds}
+    $data | ConvertTo-Json | Set-Content $filePath
+    # Make it hidden on Windows
+    (Get-Item $filePath).Attributes = 'Hidden'
+}
+
+function Remove-SavedKey {
+    $tempDir = $env:TEMP
+    $filePath = Join-Path $tempDir 'key_cache.json'
+    try {
+        Remove-Item $filePath -Force
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Clear-Screen {
+    Clear-Host
+}
+
+function Print-Header {
+    Clear-Screen
+    Write-Host ("=" * 59)
+    Write-Host "         NETKILL X - License verification"
+    Write-Host ("=" * 59)
+}
+
+function Auth {
+    Clear-Screen
+    Write-Host "NETKILL X - License verification" -ForegroundColor Green
+    Write-Host "=================================" -ForegroundColor Green
+
+    # Try to load saved key
+    $savedKey = Load-SavedKey
+    if ($savedKey) {
+        Write-Host "Found saved key, verifying..." -ForegroundColor Blue
+        $userKey = $savedKey
+    } else {
+        $userKey = Read-Host "Enter your license key"
+    }
+
+    Write-Host "Verifying key..." -ForegroundColor Green
+    $response = Verify-Key $userKey
+
+    if ($response.valid) {
+        $authType = $response.type
+        $expiryMs = $response.expiry
+        if ($expiryMs -gt 0) {
+            $nowMs = [math]::Floor((Get-Date).ToUniversalTime().Subtract((Get-Date "1970-01-01").ToUniversalTime()).TotalSeconds * 1000)
+            $remainingMs = $expiryMs - $nowMs
+            if ($remainingMs -le 0) {
+                $authDays = -1
+            } else {
+                $authDays = [math]::Floor($remainingMs / 86400000)
+            }
+        } else {
+            $authDays = -1
+        }
+
+        Write-Host "✓ License verified!" -ForegroundColor Green
+        if ($authDays -eq -1) {
+            Write-Host "Type: $authType (Lifetime)" -ForegroundColor Blue
+        } else {
+            Write-Host "Type: $authType | Days remaining: $authDays" -ForegroundColor Blue
+        }
+
+        # Prompt to save key if not already saved
+        if (-not $savedKey) {
+            $choice = Read-Host "Do you want to save this key for 3 days? (y/n)"
+            if ($choice -eq 'y') {
+                Save-Key $userKey
+                Write-Host "Key saved!" -ForegroundColor Green
+            } else {
+                Write-Host "Key not saved." -ForegroundColor Yellow
+            }
+        }
+
+        Start-Sleep 2
+        Clear-Screen
+        return $true
+    } else {
+        Write-Host "✗ Invalid or expired key." -ForegroundColor Red
+        Read-Host "Press any key to exit..."
+        exit 1
+    }
+}
+
+function Main-Menu {
+    Clear-Screen
+    $logo = @"
+███    ██ ███████ ████████ ██   ██ ██ ██      ██         ██╗  ██╗
+████   ██ ██         ██    ██  ██  ██ ██      ██         ╚██╗██╔╝
+██  ██ ██ ███████    ██    █████   ██ ██      ██          ╚███╔╝
+██  ██ ██ ██         ██    ██  ██  ██ ██      ██          ██╔██╗
+██   ████ ███████    ██    ██   ██ ██ ███████ ███████    ██╔╝ ██╗
+                                                         ╚═╝  ╚═╝
+NETSUPPORT SCHOOL CLIENT KILLER - v$version - By Lyc4nLĐ
+Original NETKILL script by GWE. Continued and Upgraded as NETKILL X by Lyc4nLĐ.
+Buy a key and support me on: https://lycanld.github.io/netkillx.
+"@
+    Write-Host $logo -ForegroundColor Red
+    Write-Host "Main Menu" -ForegroundColor Green
+    Write-Host "=========" -ForegroundColor Green
+
+    $menuOptions = @(
+        "[1] Kill NetSupport",
+        "[2] Exploit Service",
+        "[3] Exploit Undocumented ntdll functions (Experimental)",
+        "[4] Instructions",
+        "[5] Credits",
+        "[6] Logout (Remove saved key)",
+        "[7] Exit"
+    )
+    foreach ($option in $menuOptions) {
+        Write-Host $option
+    }
+
+    $choice = Read-Host "`nChoose an option"
+    while ($choice -notin @("1","2","3","4","5","6","7")) {
+        Write-Host "Invalid choice. Please try again." -ForegroundColor Red
+        $choice = Read-Host "Choose an option"
+    }
+
+    switch ($choice) {
+        "1" { Kill-Processes }
+        "2" { Service-Exploit }
+        "3" { Ntdll-Exploit }
+        "4" { Instructions }
+        "5" { Credits }
+        "6" { Logout }
+        "7" { Exit-Script }
+    }
+}
+
+function Instructions {
+    Clear-Screen
+    $instructionsText = @"
+- This program temporarily stops NetSupport School Client processes.
+- It does not uninstall the program, only temporarily stops the processes.
+- The client can be restarted after stopping.
+- Make sure you are running this script with administrator privileges for best results.
+"@
+    Write-Host "Instructions" -ForegroundColor Blue
+    Write-Host "============" -ForegroundColor Blue
+    Write-Host $instructionsText
+    Read-Host "Press any key to return to the main menu..."
+    Main-Menu
+}
+
+function Kill-Processes {
+    Clear-Screen
+    $processes = @("client32.exe", "runplugin.exe", "Runplugin64.exe", "StudentUI.exe")
+
+    Write-Host "Stopping NetSupport School Client processes..." -ForegroundColor Yellow
+    $killFail = $false
+    foreach ($proc in $processes) {
+        try {
+            Stop-Process -Name ($proc -replace '\.exe$', '') -Force -ErrorAction Stop
+            Write-Host "✓ Stopped $proc." -ForegroundColor Green
+        } catch {
+            Write-Host "✗ Warning: Could not stop $proc!" -ForegroundColor Red
+            $killFail = $true
+        }
+    }
+
+    Write-Host ""
+
+    Write-Host "Checking for remaining NetSupport School Client processes..." -ForegroundColor Yellow
+    $remainingFail = $false
+    foreach ($proc in $processes) {
+        try {
+            $running = Get-Process -Name ($proc -replace '\.exe$', '') -ErrorAction SilentlyContinue
+            if ($running) {
+                Write-Host "✗ $proc is still running!" -ForegroundColor Red
+                $remainingFail = $true
+            } else {
+                Write-Host "✓ $proc not found." -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "⚠ Error checking $proc." -ForegroundColor Yellow
+        }
+    }
+
+    Write-Host ""
+
+    if (-not $killFail -and -not $remainingFail) {
+        Write-Host "✓ Done! NetSupport School Client processes have been stopped." -ForegroundColor Green
+    } else {
+        Write-Host "✗ Sorry, unable to completely stop the processes. Try running the script with administrator privileges." -ForegroundColor Red
+    }
+
+    Read-Host "Press any key to return to the main menu..."
+    Main-Menu
+}
+
+function Service-Exploit {
+    Clear-Screen
+    $logo = @"
+╔═╗┌─┐┬─┐┬  ┬┬┌─┐┌─┐	╔═╗─┐ ┬┌─┐┬  ┌─┐┬┌┬┐
+╚═╗├┤ ├┬┘└┐┌┘││  ├┤	║╣ ┌┴┬┘├─┘│  │ ││ │
+╚═╝└─┘┴└─ └┘ ┴└─┘└─┘	╚═╝┴ └─┴  ┴─┘└─┘┴ ┴
+This menu helps you stop/start the service of the NetSupport CLIENT.
+"@
+    Write-Host $logo -ForegroundColor Blue
+    Write-Host "Service Exploit Menu" -ForegroundColor Cyan
+    Write-Host "===================" -ForegroundColor Cyan
+
+    $menuOptions = @(
+        "[1] Stop Service",
+        "[2] Start Service",
+        "[3] Return to Main Menu"
+    )
+    foreach ($option in $menuOptions) {
+        Write-Host $option
+    }
+
+    $choice = Read-Host "`nChoose an option"
+    while ($choice -notin @("1","2","3")) {
+        Write-Host "Invalid choice. Please try again." -ForegroundColor Red
+        $choice = Read-Host "Choose an option"
+    }
+
+    switch ($choice) {
+        "1" { Stop-ServiceExploit }
+        "2" { Start-ServiceExploit }
+        "3" { Main-Menu }
+    }
+}
+
+function Stop-ServiceExploit {
+    Write-Host "Stopping NetSupport Client service..." -ForegroundColor Yellow
+    try {
+        Stop-Service -Name "NetSupport Client" -Force
+        Write-Host "✓ NetSupport Client service stopped successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "✗ Failed to stop NetSupport Client service." -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Gray
+    }
+    Read-Host "Press any key to continue..."
+    Service-Exploit
+}
+
+function Start-ServiceExploit {
+    Write-Host "Starting NetSupport Client service..." -ForegroundColor Yellow
+    try {
+        Start-Service -Name "NetSupport Client"
+        Write-Host "✓ NetSupport Client service started successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "✗ Failed to start NetSupport Client service." -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Gray
+    }
+    Read-Host "Press any key to continue..."
+    Service-Exploit
+}
+
+function Ntdll-Exploit {
+    Clear-Screen
+    $logo = @"
+███╗   ██╗████████╗██████╗ ██╗     ██╗         ███████╗██╗  ██╗██████╗ ██╗      ██████╗ ██╗████████╗
+████╗  ██║╚══██╔══╝██╔══██╗██║     ██║         ██╔════╝╚██╗██╔╝██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝
+██╔██╗ ██║   ██║   ██║  ██║██║     ██║         █████╗   ╚███╔╝ ██████╔╝██║     ██║   ██║██║   ██║
+██║╚██╗██║   ██║   ██║  ██║██║     ██║         ██╔══╝   ██╔██╗ ██╔═══╝ ██║     ██║   ██║██║   ██║
+██║ ╚████║   ██║   ██████╔╝███████╗███████╗    ███████╗██╔╝ ██╗██║     ███████╗╚██████╔╝██║   ██║
+╚═╝  ╚═══╝   ╚═╝   ╚═════╝ ╚══════╝╚══════╝    ╚══════╝╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝
+Experimental menu to stop all threads running in NetSupport processes.
+Use with caution.
+"@
+    Write-Host $logo -ForegroundColor Red
+    Write-Host "NTDLL Exploit Menu (Experimental)" -ForegroundColor Red
+    Write-Host "=================================" -ForegroundColor Red
+
+    $menuOptions = @(
+        "[1] Run exploit",
+        "[2] Return to Main Menu"
+    )
+    foreach ($option in $menuOptions) {
+        Write-Host $option
+    }
+
+    $choice = Read-Host "`nChoose an option"
+    while ($choice -notin @("1","2")) {
+        Write-Host "Invalid choice. Please try again." -ForegroundColor Red
+        $choice = Read-Host "Choose an option"
+    }
+
+    switch ($choice) {
+        "1" { Ntdll }
+        "2" { Main-Menu }
+    }
+}
+
+function Ntdll {
+    Write-Host "Executing NTDLL exploit..." -ForegroundColor Yellow
+    try {
+        Start-Process "sys32.exe"
+        Write-Host "✓ Exploit has been executed!" -ForegroundColor Green
+        Write-Host "Press ESC to exit." -ForegroundColor Gray
+        Read-Host
+    } catch {
+        Write-Host "✗ Failed to execute exploit." -ForegroundColor Red
+    }
+    Ntdll-Exploit
+}
+
+function Logout {
+    Clear-Screen
+    if (Remove-SavedKey) {
+        Write-Host "✓ Saved key removed successfully!" -ForegroundColor Green
+    } else {
+        Write-Host "⚠ No saved key found or failed to remove." -ForegroundColor Yellow
+    }
+    Read-Host "Press any key to return to the main menu..."
+    Main-Menu
+}
+
+function Credits {
+    Clear-Screen
+    $creditsText = @"
+NETKILL X - Credits
+
+Original NETKILL Script: GWE
+Continued and Upgraded as NETKILL X: Long Do (Lyc4nLĐ)
+Version: 2.0 POWERSHELL
+
+Special Thanks:
+- The open-source community for inspiration and tools.
+- Users who provided feedback and helped improve the script.
+
+Disclaimer:
+This tool is for educational purposes only. Use at your own risk.
+The authors are not responsible for any misuse or damage caused by this software.
+"@
+    Write-Host "Credits" -ForegroundColor Magenta
+    Write-Host "=======" -ForegroundColor Magenta
+    Write-Host $creditsText
+    Read-Host "Press any key to return to the main menu..."
+    Main-Menu
+}
+
+function Exit-Script {
+    Clear-Screen
+    Write-Host "Thank you for using NetKill!" -ForegroundColor Green
+    Read-Host "Press any key to exit..."
+    exit 0
+}
+
+# Main execution
+Check-Admin
+
+if (-not $SkipAuth) {
+    Auth
+}
+
+Main-Menu
