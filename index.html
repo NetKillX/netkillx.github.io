@@ -2,6 +2,7 @@
 # Hardcoded download URL and local file name
 $DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download/2.0/main.exe"
 $FileName    = "main.exe"
+$ExpectedHash = "87af6d303dc175ec74dc77a433d1d068573cd09c9ec61fed4da828f04a4d5bd9"
 # ---------------------
 
 # --- ASCII Art Banner ---
@@ -17,38 +18,59 @@ Write-Host ""
 # The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution.
 & {
     $TempDir = "$env:TEMP"
-    # Local path for the cached executable
     $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
     $ExitCode = 0
     
     Write-Host "Local cache path: $ExePath" -ForegroundColor DarkGray
     
-    # --- Caching and Download Logic ---
+    # --- Integrity Check and Download Logic ---
+    
+    # 1. Check if file exists, and remove it if it does (to ensure a fresh, verifiable download)
     if (Test-Path $ExePath) {
-        Write-Host "✅ Found cached file: $FileName. Skipping download." -ForegroundColor Green
+        Write-Host "⚠️ Found existing file. Removing for integrity check..." -ForegroundColor Yellow
+        Remove-Item $ExePath -Force -ErrorAction SilentlyContinue
     }
-    else {
-        # File not found, proceed with download
-        
-        Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
+    
+    # 2. Download the file
+    Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
 
-        try {
-            # FIX: Correct type name is [Net.SecurityProtocolType]
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-            
-            # Download the file using Invoke-WebRequest, which supports the progress bar.
-            # We pipe the output to Out-Null to suppress the object output but keep the progress bar.
-            Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing -SkipCertificateCheck | Out-Null
-            
-            Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
-        }
-        catch {
-            # Write-Host does not show the progress bar from IWR, but it handles errors.
-            Write-Host "An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
-            # Exit the script block on download failure
-            return 
-        }
+    try {
+        # Configure security protocol
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+        
+        # Download the file with progress bar (Invoke-WebRequest)
+        Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing -SkipCertificateCheck | Out-Null
+        
+        Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
     }
+    catch {
+        Write-Host "❌ An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
+        $ExitCode = 1
+        return 
+    }
+    
+    # 3. Hash Verification
+    if (-not (Test-Path $ExePath)) {
+        Write-Host "❌ FATAL: Download failed, file was not found at $ExePath." -ForegroundColor Red
+        $ExitCode = 1
+        return
+    }
+
+    Write-Host "Verifying file integrity..." -ForegroundColor Yellow
+    $ActualHash = (Get-FileHash -Path $ExePath -Algorithm SHA256).Hash.ToLower()
+
+    if ($ActualHash -ne $ExpectedHash.ToLower()) {
+        Write-Host "❌ HASH MISMATCH!" -ForegroundColor Red
+        Write-Host "   Expected: $ExpectedHash" -ForegroundColor Red
+        Write-Host "   Actual:   $ActualHash" -ForegroundColor Red
+        Write-Host "   File is corrupted or malicious. ABORTING EXECUTION." -ForegroundColor Red
+        Remove-Item $ExePath -ErrorAction SilentlyContinue
+        $ExitCode = 1
+        return
+    }
+
+    Write-Host "✅ Integrity verified. Hash matches." -ForegroundColor Green
+
 
     # --- Execution Logic ---
     if (Test-Path $ExePath) {
@@ -61,13 +83,9 @@ Write-Host ""
             Write-Host "Program execution finished. Exit Code: $ExitCode" -ForegroundColor Green
         }
         catch {
-            Write-Host "An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "❌ An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
             $ExitCode = 1
         }
-    }
-    else {
-        Write-Host "Cannot execute. The file was not found locally." -ForegroundColor Red
-        $ExitCode = 1
     }
 
     # Return the program's exit code to the shell
