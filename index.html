@@ -3,7 +3,7 @@ $DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download
 $FileName    = "main.exe"
 # ---------------------
 
-# --- Execution Block ---
+# The entire logic is contained in a self-invoking script block (& { ... }) for clean execution via iex.
 & {
     $TempDir = "$env:TEMP"
     $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
@@ -16,25 +16,18 @@ $FileName    = "main.exe"
         Write-Host "✅ Found cached file: $FileName. Skipping download." -ForegroundColor Green
     }
     else {
-        # File not found, proceed with download
         $WebClient = New-Object System.Net.WebClient
         
         Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
 
         try {
-            # Set Security Protocol to handle modern TLS
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-            
-            # Download the file
             $WebClient.DownloadFile($DownloadUrl, $ExePath)
             Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
         }
         catch {
-            Write-Host "An error occurred during download:" -ForegroundColor Red
-            Write-Host $_.Exception.Message -ForegroundColor Red
-            $ExitCode = 1
-            # Exit immediately if the download failed
-            return # Use return instead of exit to break out of the script block
+            Write-Host "An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
+            return
         }
     }
 
@@ -43,14 +36,13 @@ $FileName    = "main.exe"
         Write-Host "Executing $FileName in the current terminal..." -ForegroundColor Yellow
         
         try {
-            # Use the call operator (&) to execute the file in the same console window
+            # Execute the EXE
             & $ExePath
             $ExitCode = $LASTEXITCODE
             Write-Host "Program execution finished. Exit Code: $ExitCode" -ForegroundColor Green
         }
         catch {
-            Write-Host "An error occurred during execution:" -ForegroundColor Red
-            Write-Host $_.Exception.Message -ForegroundColor Red
+            Write-Host "An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
             $ExitCode = 1
         }
     }
@@ -59,6 +51,5 @@ $FileName    = "main.exe"
         $ExitCode = 1
     }
 
-    # Return the program's exit code from the script block
     exit $ExitCode
 }
