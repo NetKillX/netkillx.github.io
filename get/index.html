@@ -44,9 +44,7 @@ function Show-Progress {
     # Local path for the cached executable
     $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
     $ExitCode = 0
-    
-    Write-Host "Local cache path: $ExePath" -ForegroundColor DarkGray
-    Write-Host ""
+   
     
     # --- Caching and Download Logic ---
     if (Test-Path $ExePath) {
