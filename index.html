@@ -434,6 +434,7 @@
       align-items: center;
       opacity: 0;
       transition: opacity 0.3s ease;
+      padding: 20px;
     }
 
     .dialog-backdrop.open {
@@ -445,13 +446,16 @@
       background: var(--surface);
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      padding: 32px;
       max-width: 700px;
-      width: 90%;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
       transform: scale(0.9);
       opacity: 0;
       transition: transform 0.3s ease, opacity 0.3s ease;
       position: relative;
+      overflow: hidden;
     }
 
     .dialog::before {
@@ -462,6 +466,7 @@
       right: 0;
       height: 4px;
       background: var(--gradient-primary);
+      z-index: 1;
     }
 
     .dialog-backdrop.open .dialog {
@@ -470,23 +475,46 @@
     }
 
     .dialog-header {
+      padding: 24px 24px 16px;
       font-size: 1.8rem;
       font-weight: 700;
-      margin-bottom: 20px;
       color: var(--text);
-    }
-
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      margin-top: 32px;
+      flex-shrink: 0;
     }
 
     .dialog-content {
+      padding: 0 24px;
+      overflow-y: auto;
+      flex: 1;
       display: flex;
       flex-direction: column;
       gap: 20px;
+    }
+
+    .dialog-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .dialog-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .dialog-content::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    .dialog-content::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-light);
+    }
+
+    .dialog-actions {
+      padding: 16px 24px 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
     }
 
     .dialog-content ul {
@@ -574,6 +602,30 @@
       font-size: 0.9rem;
     }
 
+    /* Vietnam Flag */
+    .vietnam-flag {
+      display: inline-block;
+      width: 18px;
+      height: 12px;
+      background-color: #da251d;
+      position: relative;
+      margin: 0 4px;
+      vertical-align: middle;
+      border-radius: 2px;
+    }
+
+    .vietnam-flag::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background-color: #ffcc00;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -641,15 +693,55 @@
       }
       
       .dialog {
-        padding: 24px;
+        max-height: 95vh;
       }
       
       .dialog-header {
+        padding: 20px 20px 12px;
         font-size: 1.5rem;
+      }
+
+      .dialog-content {
+        padding: 0 20px;
+      }
+
+      .dialog-actions {
+        padding: 12px 20px 20px;
       }
 
       .contact-methods {
         grid-template-columns: 1fr;
+      }
+
+      .dialog-backdrop {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dialog-backdrop {
+        padding: 12px;
+      }
+
+      .dialog-header {
+        padding: 16px 16px 12px;
+        font-size: 1.3rem;
+      }
+
+      .dialog-content {
+        padding: 0 16px;
+      }
+
+      .dialog-actions {
+        padding: 12px 16px 16px;
+      }
+
+      .price-board {
+        padding: 16px;
+      }
+
+      .contact-method {
+        padding: 16px;
       }
     }
   </style>
@@ -684,7 +776,7 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
     <div class="grid">
       <div>
         <div class="card fade-in">
-          <h2><i class="fas fa-terminal"></i> Usage — run this in PowerShell (copyable)</h2>
+          <h2><i class="fas fa-terminal"></i> Usage — run this in PowerShell</h2>
           <p class="muted">Open an elevated PowerShell session (Run as Administrator) and paste the command below.</p>
 
           <div style="margin-top:16px">
@@ -708,7 +800,7 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
             </div>
             <div class="feature-item">
               <strong><i class="fas fa-bolt"></i> Quick Execution</strong>
-              <div class="muted">Ends the SchoolNetSupport processes quickly without notice.</div>
+              <div class="muted">Single-command execution helps with speed and stealth.</div>
             </div>
             <div class="feature-item">
               <strong><i class="fas fa-user-secret"></i> Stealthy</strong>
@@ -736,7 +828,7 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
       <aside>
         <div class="card fade-in">
           <h3><i class="fas fa-shopping-cart"></i> Buy a key</h3>
-          <p class="muted">Purchase a license key to access the script!</p>
+          <p class="muted">Purchase a license key to access the script and support me!</p>
           <div style="display:flex;gap:12px;margin-top:16px">
             <button class="button button-raised" id="buyNow">Buy now</button>
             <button class="button button-outlined" id="contactSales">Contact sales</button>
@@ -746,14 +838,14 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 
         <div class="card fade-in" style="margin-top:24px">
           <h3><i class="fas fa-envelope"></i> Contact</h3>
-          <p class="muted">Author: Long Do (Lyc4nLĐ)</p>
-          <p class="muted">Support: <a href="https://lycanld.github.io/" target="_blank">Project page</a></p>
+          <p class="muted">Author: Lyc4nLĐ</p>
+          <p class="muted">Support: <a href="https://lycanld.github.io/contact" target="_blank">My page</a></p>
         </div>
       </aside>
     </div>
 
     <footer>
-      <div class="muted">Made by Lyc4nLĐ (Long Do). Use it at your own risk! ©️LycanLĐ 2025</div>
+      <div class="muted">Made by Lyc4nLĐ. Proudly made in <span class="vietnam-flag"></span> Vietnam. Use it at your own risk! ©️LycanLĐ 2025</div>
     </footer>
   </main>
 
@@ -821,15 +913,26 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
     // Dialog Functions
     const showDialog = (backdrop, dialog) => {
       backdrop.classList.add('open');
+      // Prevent body scroll when dialog is open
+      document.body.style.overflow = 'hidden';
     };
     
     const hideDialog = (backdrop, dialog) => {
       backdrop.classList.remove('open');
+      // Restore body scroll when dialog is closed
+      document.body.style.overflow = '';
     };
 
     // Event Listeners
     buyNow.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
     buyCancel.addEventListener('click', () => hideDialog(buyDialogBackdrop, buyDialog));
+
+    // Close dialog when clicking on backdrop
+    buyDialogBackdrop.addEventListener('click', function(e) {
+      if (e.target === buyDialogBackdrop) {
+        hideDialog(buyDialogBackdrop, buyDialog);
+      }
+    });
 
     // Contact method clicks
     document.querySelectorAll('.contact-method').forEach(method => {
