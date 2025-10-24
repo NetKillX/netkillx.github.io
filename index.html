@@ -5,96 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NETKILL X — Official Web</title>
   <link rel="icon" href="icon.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <style>
-    /* CSS Variables (from MWC theme) */
+    /* CSS Variables */
     :root {
       --primary: #1fb26a;
+      --primary-light: #2dd483;
+      --primary-dark: #189e5d;
       --accent: #ef4444;
+      --accent-light: #ff6b6b;
       --on-primary: #000000;
       --surface: #0f1720;
+      --surface-light: #142030;
       --card-bg: #0b1220;
+      --card-hover: #0f1625;
       --muted: #94a3b8;
       --text: #e6eef8;
+      --text-secondary: #a0aec0;
       --shadow-color: rgba(2, 6, 23, 0.6);
+      --shadow-hover: rgba(2, 6, 23, 0.9);
+      --gradient-primary: linear-gradient(135deg, #1fb26a 0%, #189e5d 100%);
+      --gradient-surface: linear-gradient(180deg, #071020 0%, #071422 100%);
+      --gradient-card: linear-gradient(145deg, #0b1220 0%, #0f1625 100%);
+      --gradient-accent: linear-gradient(135deg, #ef4444 0%, #d63031 100%);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     html, body {
       height: 100%;
-      margin: 0;
-      font-family: Roboto, Arial, sans-serif;
-      background: linear-gradient(180deg, #071020 0%, #071422 100%);
+      font-family: 'Inter', Roboto, Arial, sans-serif;
+      background: var(--gradient-surface);
       color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
     }
-    
-    /* Top App Bar Replacement (.header) */
+
+    /* Smooth Scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Top App Bar */
     .header {
       position: sticky;
       top: 0;
-      z-index: 10;
-      background: var(--surface); /* Use the surface color for the header background */
+      z-index: 100;
+      background: rgba(15, 23, 32, 0.95);
+      backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
-      padding: 0 16px;
-      height: 56px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      padding: 0 24px;
+      height: 64px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      transition: var(--transition);
     }
+
     .header-center {
       display: flex;
       align-items: center;
-      flex-grow: 1;
-      padding-left: 16px;
     }
+
     .header-logo {
-      width: 32px;
-      height: 32px;
-      margin-right: 12px;
-      border-radius: 4px;
+      width: 36px;
+      height: 36px;
+      margin-right: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: var(--transition);
     }
+
+    .header-logo:hover {
+      transform: rotate(10deg) scale(1.05);
+    }
+
     .header-title {
-      font-size: 1.25rem;
-      font-weight: 500;
-    }
-    .icon-button {
-      background: none;
-      border: none;
-      color: var(--text);
-      cursor: pointer;
-      padding: 12px;
-      border-radius: 50%;
-      line-height: 0;
-      transition: background-color 0.15s;
-    }
-    .icon-button:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
     }
 
     /* Layouts and Grid */
     .layout {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: 24px;
       max-width: 1200px;
-      margin: 20px auto;
-      padding: 0 20px;
+      margin: 32px auto;
+      padding: 0 24px;
     }
+
     .hero {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 20px;
       align-items: flex-start;
+      padding: 32px 0;
     }
+
     .hero p {
       margin: 0;
-      color: var(--muted);
-      font-size: 1.1rem;
-      line-height: 1.5;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      line-height: 1.7;
+      max-width: 800px;
     }
+
     .grid {
       display: grid;
       grid-template-columns: 2fr 1fr;
-      gap: 20px;
+      gap: 24px;
     }
+
     @media (max-width: 880px) {
       .grid {
         grid-template-columns: 1fr;
@@ -103,14 +137,14 @@
         align-items: stretch;
       }
     }
+
     @media (max-width: 600px) {
       .layout {
-        padding: 0 12px;
-        margin: 16px auto;
+        padding: 0 16px;
+        margin: 24px auto;
       }
       .hero {
-        flex-direction: column;
-        gap: 16px;
+        padding: 24px 0;
       }
       .download-btn {
         flex-direction: column;
@@ -118,136 +152,274 @@
         gap: 12px;
       }
       .card {
-        padding: 16px;
+        padding: 20px;
       }
       .hero p {
-        font-size: 1rem;
+        font-size: 1.1rem;
       }
     }
 
-    /* Card Replacement (.card) */
-    .card {
-      display: block;
-      padding: 18px;
-      border-radius: 12px;
-      background: var(--card-bg);
-      box-shadow: 0 6px 18px var(--shadow-color);
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.8);
+    /* ASCII Banner */
+    .banner {
+      font-family: 'Courier New', monospace;
+      white-space: pre;
+      line-height: 1;
+      margin: 16px 0;
+      padding: 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.02));
+      overflow-x: auto;
+      text-align: center;
+      color: var(--text);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Button Replacements (.button, .button-raised, .button-outlined) */
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-primary);
+    }
+
+    .red { 
+      color: #ef4444; 
+      text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+
+    .blue { 
+      color: #3b82f6; 
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    /* Cards */
+    .card {
+      display: block;
+      padding: 24px;
+      border-radius: 16px;
+      background: var(--gradient-card);
+      box-shadow: 0 10px 30px var(--shadow-color);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px var(--shadow-hover);
+      background: var(--card-hover);
+    }
+
+    .card h2, .card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      color: var(--text);
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+
+    /* Buttons */
     .button {
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-weight: 500;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
       cursor: pointer;
       text-transform: uppercase;
-      transition: background-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+      transition: var(--transition);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      height: 40px; /* Standard button height */
+      height: 48px;
       box-sizing: border-box;
       white-space: nowrap;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
     }
+
+    .button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .button:active::before {
+      width: 300px;
+      height: 300px;
+    }
+
     .button-raised {
-      background-color: var(--primary);
+      background: var(--gradient-primary);
       color: var(--on-primary);
       border: none;
-      box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+      box-shadow: 0 4px 15px rgba(31, 178, 106, 0.3);
     }
+
     .button-raised:hover {
-      opacity: 0.9;
-      box-shadow: 0 4px 4px -2px rgba(0,0,0,.2), 0 3px 5px 0 rgba(0,0,0,.14), 0 2px 10px 0 rgba(0,0,0,.12);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(31, 178, 106, 0.4);
     }
+
     .button-outlined {
       background-color: transparent;
       color: var(--primary);
-      border: 1px solid rgba(31, 178, 106, 0.5); /* Primary with some opacity for outline */
+      border: 2px solid var(--primary);
     }
+
     .button-outlined:hover {
-      background-color: rgba(31, 178, 106, 0.08); /* Slight primary hover background */
+      background-color: rgba(31, 178, 106, 0.1);
+      transform: translateY(-2px);
     }
 
     /* Utility Classes */
     .monospace {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+      font-family: 'Courier New', monospace;
     }
+
     footer {
-      margin: 32px 0;
+      margin: 48px 0 24px;
       text-align: center;
-      color: var(--muted);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
     }
+
     .feature-list {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      gap: 20px;
     }
+
     @media(max-width: 640px) {
       .feature-list {
         grid-template-columns: 1fr;
       }
     }
-    .muted {
-      color: var(--muted);
+
+    .feature-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
+
+    .feature-item strong {
+      font-size: 1.1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-item strong i {
+      font-size: 1rem;
+    }
+
+    .muted {
+      color: var(--text-secondary);
+    }
+
     .download-btn {
       display: flex;
-      gap: 8px;
+      gap: 12px;
     }
+
     pre.code-block {
-      background: #071019;
+      background: rgba(7, 16, 25, 0.7);
       color: var(--text);
-      padding: 12px;
-      border-radius: 8px;
+      padding: 16px;
+      border-radius: 12px;
       overflow: auto;
+      font-family: 'Courier New', monospace;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
+
     a {
       color: var(--primary);
+      text-decoration: none;
+      transition: var(--transition);
     }
+
+    a:hover {
+      color: var(--primary-light);
+      text-decoration: underline;
+    }
+
     .code-snippet {
-      background: #051017;
-      padding: 12px;
-      border-radius: 8px;
+      background: rgba(5, 16, 23, 0.7);
+      padding: 16px;
+      border-radius: 12px;
       color: var(--text);
-      font-family: ui-monospace, 'Roboto Mono', monospace;
+      font-family: 'Courier New', monospace;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
     }
+
     .copy-row {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       align-items: center;
     }
+
     .copy-btn {
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
     }
 
-    /* ASCII banner */
-    .banner {
-      font-family: ui-monospace, 'Roboto Mono', monospace;
-      white-space: pre;
-      line-height: 0.9;
-      margin: 8px 0;
-      padding: 12px;
-      border-radius: 8px;
-      background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.01));
-      overflow-x: auto;
-      text-align: center;
-      color: var(--text);
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
     }
-    .red { color: #ef4444; }
-    .blue { color: #3b82f6; }
 
-    /* Dialog Replacement (.dialog-backdrop, .dialog) */
+    .copy-btn i {
+      font-size: 0.9rem;
+    }
+
+    /* Dialogs */
     .dialog-backdrop {
       position: fixed;
       top: 0;
@@ -255,78 +427,255 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
       z-index: 1000;
-      display: none; /* Hidden by default */
+      display: none;
       justify-content: center;
       align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
+
+    .dialog-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
     .dialog {
       background: var(--surface);
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9);
-      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      padding: 32px;
       max-width: 700px;
       width: 90%;
       transform: scale(0.9);
       opacity: 0;
-      transition: transform 0.2s ease, opacity 0.2s ease;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      position: relative;
     }
-    .dialog.open {
-      display: flex;
+
+    .dialog::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
+
+    .dialog-backdrop.open .dialog {
       transform: scale(1);
       opacity: 1;
     }
+
     .dialog-header {
-      font-size: 1.5rem;
-      font-weight: 500;
-      margin-bottom: 16px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
     }
+
     .dialog-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      margin-top: 24px;
+      gap: 12px;
+      margin-top: 32px;
     }
+
     .dialog-content {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
     }
+
     .dialog-content ul {
       margin: 0;
-      padding-left: 20px;
+      padding-left: 24px;
     }
+
     .dialog-content li {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    .price-board {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .price-board h4 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    .price-board ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .price-board li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .price-board li:last-child {
+      border-bottom: none;
+    }
+
+    .price {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .contact-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .contact-method {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .contact-method:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-3px);
+      border-color: var(--primary);
+    }
+
+    .contact-method i {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .contact-method h4 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .contact-method p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    /* Loading Animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Notification Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      color: var(--text);
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast i {
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .header {
+        padding: 0 16px;
+        height: 56px;
+      }
+      
+      .header-title {
+        font-size: 1.3rem;
+      }
+      
+      .dialog {
+        padding: 24px;
+      }
+      
+      .dialog-header {
+        font-size: 1.5rem;
+      }
+
+      .contact-methods {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   
   <div class="header">
-    <button class="icon-button" id="menuBtn">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-    </button>
     <div class="header-center">
       <img src="icon.png" alt="NETKILL X Logo" class="header-logo">
       <div class="header-title">NETKILL X</div>
     </div>
-
   </div>
 
   <main class="layout">
-    <pre class="banner">
+    <pre class="banner fade-in">
 <span class="red">███    ██ ███████ ████████ ██   ██ ██ ██      ██         ██╗  ██╗
  ████   ██ ██         ██    ██  ██  ██ ██      ██         ╚██╗██╔╝ 
  ██ ██  ██ ███████    ██    █████   ██ ██      ██          ╚███╔╝  
  ██  ██ ██ ██         ██    ██  ██  ██ ██      ██          ██╔██╗  
 ██   ████ ███████    ██    ██   ██ ██ ███████ ███████    ██╔╝ ██╗
-                                                          ╚═╝  ╚═╝
+                                                         ╚═╝  ╚═╝
 NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 <span class="blue">Original NETKILL script by GWE. Continued and Upgraded as NETKILL X by Lyc4nLĐ.</span>
 </pre>
 
-    <section class="hero">
+    <section class="hero fade-in">
       <div>
         <p class="muted">A focused fileless tool for temporarily pausing NetSupport School client without leaving any traces. Use only on machines you own or manage.</p>
       </div>
@@ -334,46 +683,46 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 
     <div class="grid">
       <div>
-        <div class="card">
-          <h2 style="margin-top:0">Usage — run this in PowerShell (copyable)</h2>
+        <div class="card fade-in">
+          <h2><i class="fas fa-terminal"></i> Usage — run this in PowerShell (copyable)</h2>
           <p class="muted">Open an elevated PowerShell session (Run as Administrator) and paste the command below.</p>
 
-          <div style="margin-top:12px">
+          <div style="margin-top:16px">
             <label class="muted" for="command">PowerShell command</label>
-            <div class="copy-row" style="margin-top:8px">
+            <div class="copy-row" style="margin-top:12px">
               <pre id="command" class="code-snippet monospace" style="flex:1;min-width:0;white-space:pre-wrap;">irm netkillx.github.io/get/ | iex</pre>
-              <div class="copy-btn" id="copyBtn" title="Copy">Copy</div>
+              <div class="copy-btn" id="copyBtn" title="Copy"><i class="fas fa-copy"></i> Copy</div>
             </div>
-            <div id="copyStatus" class="muted" style="margin-top:8px">Tip: run inside an elevated PowerShell window.</div>
+            <div id="copyStatus" class="muted" style="margin-top:12px">Tip: run inside an elevated PowerShell window.</div>
           </div>
 
-          <div style="margin-top:14px" class="muted">You can also target the specific script file: <code class="monospace">irm netkillx.github.io/main.ps1 | iex</code></div>
+          <div style="margin-top:16px" class="muted">You can also target the specific script file: <code class="monospace">irm netkillx.github.io/main.ps1 | iex</code></div>
         </div>
 
-        <div class="card" style="margin-top:14px">
-          <h2 style="margin-top:0">Features</h2>
+        <div class="card fade-in" style="margin-top:24px">
+          <h2><i class="fas fa-star"></i> Features</h2>
           <div class="feature-list">
-            <div>
-              <strong>Fileless</strong>
+            <div class="feature-item">
+              <strong><i class="fas fa-memory"></i> Fileless</strong>
               <div class="muted">Run in-memory commands without leaving files/traces behind.</div>
             </div>
-            <div>
-              <strong>Quick Execution</strong>
+            <div class="feature-item">
+              <strong><i class="fas fa-bolt"></i> Quick Execution</strong>
               <div class="muted">Ends the SchoolNetSupport processes quickly without notice.</div>
             </div>
-            <div>
-              <strong>Stealthy</strong>
+            <div class="feature-item">
+              <strong><i class="fas fa-user-secret"></i> Stealthy</strong>
               <div class="muted">Masked under "Microsoft Powerpoint" so your teacher won't notice!</div>
             </div>
-            <div>
-              <strong>Persistant</strong>
+            <div class="feature-item">
+              <strong><i class="fas fa-sync-alt"></i> Persistent</strong>
               <div class="muted">Automatically stops the SchoolNetSupport everytime you open the computer (optional).</div>
             </div>
           </div>
         </div>
 
-        <div class="card" style="margin-top:14px">
-          <h2 style="margin-top:0">Docs & Instructions</h2>
+        <div class="card fade-in" style="margin-top:24px">
+          <h2><i class="fas fa-book"></i> Docs & Instructions</h2>
           <ol>
             <li>Open an elevated PowerShell session on the target machine.</li>
             <li>Paste the command below into the elevated PowerShell session and press Enter.</li>
@@ -385,18 +734,18 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
       </div>
 
       <aside>
-        <div class="card">
-          <h3 style="margin-top:0">Buy a key</h3>
+        <div class="card fade-in">
+          <h3><i class="fas fa-shopping-cart"></i> Buy a key</h3>
           <p class="muted">Purchase a license key to access the script!</p>
-          <div style="display:flex;gap:8px;margin-top:8px">
+          <div style="display:flex;gap:12px;margin-top:16px">
             <button class="button button-raised" id="buyNow">Buy now</button>
             <button class="button button-outlined" id="contactSales">Contact sales</button>
           </div>
-          <div style="margin-top:12px;color:var(--muted);font-size:13px">After purchase you will receive a key and an invoice. Keep your key secure.</div>
+          <div style="margin-top:16px;color:var(--muted);font-size:14px">After purchase you will receive a key and an invoice. Keep your key secure.</div>
         </div>
 
-        <div class="card" style="margin-top:12px">
-          <h3 style="margin-top:0">Contact</h3>
+        <div class="card fade-in" style="margin-top:24px">
+          <h3><i class="fas fa-envelope"></i> Contact</h3>
           <p class="muted">Author: Long Do (Lyc4nLĐ)</p>
           <p class="muted">Support: <a href="https://lycanld.github.io/" target="_blank">Project page</a></p>
         </div>
@@ -408,229 +757,153 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
     </footer>
   </main>
 
-  <div class="dialog-backdrop" id="confirmDialogBackdrop">
-    <div class="dialog" id="confirmDialog">
-      <div class="dialog-header">Confirm action</div>
-      <div id="confirmText"></div>
-      <div class="dialog-actions">
-        <button class="button button-outlined" id="confirmCancel">Cancel</button>
-        <button class="button button-raised" id="confirmAccept">Run</button>
-      </div>
-    </div>
-  </div>
-
   <div class="dialog-backdrop" id="buyDialogBackdrop">
     <div class="dialog" id="buyDialog">
       <div class="dialog-header">Buy NETKILL X License</div>
       <div class="dialog-content">
-        <p>Unlock premium features with a license key.</p>
-        <ul>
-          <li><strong>Features:</strong> Priority support, advanced tools, commercial use</li>
-        </ul>
+        <p>Unlock premium features with a license key. Contact me directly to purchase.</p>
+        
         <div class="price-board">
           <h4>License Options</h4>
           <ul>
-            <li>5 Day Key: 10,000 VND</li>
-            <li>30 Day Key: 60,000 VND</li>
-            <li>60 Day Key: 90,000 VND</li>
-            <li>Lifetime Key: 150,000 VND</li>
+            <li>5 Day Key <span class="price">10,000 VND</span></li>
+            <li>30 Day Key <span class="price">60,000 VND</span></li>
+            <li>60 Day Key <span class="price">90,000 VND</span></li>
+            <li>Lifetime Key <span class="price">150,000 VND</span></li>
           </ul>
         </div>
-        <p>To purchase, contact me on:</p>
-        <ul>
-          <li><strong>Zalo:</strong> 0938332045</li>
-          <li><strong>Discord:</strong> longdoz</li>
-          <li><strong>Telegram:</strong> @lycanld</li>
-        </ul>
-        <p>Contact for bulk discounts or custom plans.</p>
+        
+        <p>Choose your preferred contact method below:</p>
+        
+        <div class="contact-methods">
+          <div class="contact-method" data-contact="zalo">
+            <i class="fas fa-comments"></i>
+            <h4>Zalo</h4>
+            <p>0938332045</p>
+          </div>
+          <div class="contact-method" data-contact="discord">
+            <i class="fab fa-discord"></i>
+            <h4>Discord</h4>
+            <p>longdoz</p>
+          </div>
+          <div class="contact-method" data-contact="telegram">
+            <i class="fab fa-telegram"></i>
+            <h4>Telegram</h4>
+            <p>@lycanld</p>
+          </div>
+        </div>
+        
+        <p>Contact for bulk discounts or custom plans. After payment, you'll receive your license key via your chosen contact method.</p>
       </div>
       <div class="dialog-actions">
         <button class="button button-outlined" id="buyCancel">Cancel</button>
-        <button class="button button-raised" id="buyAccept">Proceed to Payment</button>
       </div>
     </div>
   </div>
 
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Command copied to clipboard</span>
+  </div>
+
   <script>
-    // Translations
-    const translations = {
-      en: {
-        title: "NETKILL X — Official Website",
-        heroDesc: "A fileless tool specifically designed to temporarily disable the NetSupport School client without leaving any traces. Use only on machines you own or manage.",
-        buyKey: "Buy key",
-        download: "Download",
-        usageTitle: "How to use — run in PowerShell",
-        usageDesc: "Open a PowerShell session and paste the command below.",
-        commandLabel: "PowerShell command",
-        copyTip: "Tip: run in PowerShell window with admin rights (if available).",
-        altCommand: "You can also run the script file directly: irm netkillx.github.io/main.ps1 | iex",
-        featuresTitle: "Key Features",
-        fileless: "Fileless (No files needed)",
-        filelessDesc: "Execute commands in memory without storing files/traces on disk.",
-        quickExec: "Fast Execution",
-        quickExecDesc: "Terminates NetSupport School processes quickly without attracting attention.",
-        stealthy: "Safe",
-        stealthyDesc: "Disguised under \"Microsoft Powerpoint\" so your teacher won't detect it!",
-        persistent: "Auto-activate (on boot)",
-        persistentDesc: "Automatically stops NetSupport School every time you turn on the computer (optional).",
-        docsTitle: "User Guide (Instructions)",
-        step1: "Open PowerShell session with admin rights on the computer.",
-        step2: "Paste the command below into the elevated PowerShell session and press Enter.",
-        step3: "Follow the instructions.",
-        docsDesc: "This script is created for students who don't want to be monitored by the school's IT staff/Teacher, specifically targeting the NetSupport School program. It can disable the process temporarily or permanently (auto-activate). Use at your own risk!",
-        buyKeyTitle: "Buy key",
-        buyKeyDesc: "Buy key to use the script!",
-        buyNow: "Buy now",
-        contactSales: "Contact",
-        buyNote: "After purchase, you will receive the activation key from the script owner. Please keep your key safe.",
-        contactTitle: "Contact",
-        author: "Script Owner/Developer: Long Do (Lyc4nLĐ)",
-        support: "Support: Github Page",
-        footer: "Created by Lyc4nLĐ (Long Do). Use at your own risk! ©️LycanLĐ 2025",
-        confirmAction: "Confirm",
-        cancel: "Cancel",
-        run: "Run",
-        buyLicense: "Buy NETKILL X License",
-        buyDesc: "Unlock premium features with a license key.",
-        features: "Features",
-        featuresDesc: "Priority support, advanced tools, commercial use",
-        pricing: "License Options",
-        contactOn: "To purchase, contact me on:",
-        bulkContact: "Contact for bulk discounts or custom plans.",
-        proceedPayment: "Proceed to Payment",
-        copied: "Command copied to clipboard",
-        copyError: "Unable to copy — please select the text and copy manually"
-      }
-    };
-
-    let currentLang = 'en';
-
-    // Apply initial language
-    updateLanguage();
-
-    function updateLanguage() {
-      const t = translations[currentLang];
-
-      // Update title
-      document.title = t.title;
-
-      // Update hero section
-      document.querySelector('.hero p').textContent = t.heroDesc;
-      document.getElementById('buyKeyBtn').textContent = t.buyKey;
-      document.getElementById('downloadBtn').textContent = t.download;
-
-      // Update usage section
-      document.querySelector('.card h2').textContent = t.usageTitle;
-      document.querySelector('.card p').textContent = t.usageDesc;
-      document.querySelector('label').textContent = t.commandLabel;
-      document.getElementById('copyStatus').textContent = t.copyTip;
-      document.querySelector('.card .muted:last-of-type').textContent = t.altCommand;
-
-      // Update features section
-      document.querySelectorAll('.card')[1].querySelector('h2').textContent = t.featuresTitle;
-      const features = document.querySelectorAll('.feature-list div');
-      features[0].querySelector('strong').textContent = t.fileless;
-      features[0].querySelector('.muted').textContent = t.filelessDesc;
-      features[1].querySelector('strong').textContent = t.quickExec;
-      features[1].querySelector('.muted').textContent = t.quickExecDesc;
-      features[2].querySelector('strong').textContent = t.stealthy;
-      features[2].querySelector('.muted').textContent = t.stealthyDesc;
-      features[3].querySelector('strong').textContent = t.persistent;
-      features[3].querySelector('.muted').textContent = t.persistentDesc;
-
-      // Update docs section
-      document.querySelectorAll('.card')[2].querySelector('h2').textContent = t.docsTitle;
-      const steps = document.querySelectorAll('ol li');
-      steps[0].textContent = t.step1;
-      steps[1].textContent = t.step2;
-      steps[2].textContent = t.step3;
-      document.querySelectorAll('.card')[2].querySelector('.muted').textContent = t.docsDesc;
-
-      // Update sidebar
-      document.querySelector('aside .card h3').textContent = t.buyKeyTitle;
-      document.querySelector('aside .card p').textContent = t.buyKeyDesc;
-      document.getElementById('buyNow').textContent = t.buyNow;
-      document.getElementById('contactSales').textContent = t.contactSales;
-      document.querySelector('aside .card .muted').textContent = t.buyNote;
-
-      document.querySelectorAll('aside .card')[1].querySelector('h3').textContent = t.contactTitle;
-      document.querySelectorAll('aside .card')[1].querySelectorAll('p')[0].textContent = t.author;
-      document.querySelectorAll('aside .card')[1].querySelectorAll('p')[1].textContent = t.support;
-
-      // Update footer
-      document.querySelector('footer .muted').textContent = t.footer;
-
-      // Update dialogs
-      document.querySelector('#confirmDialog .dialog-header').textContent = t.confirmAction;
-      document.getElementById('confirmCancel').textContent = t.cancel;
-      document.getElementById('confirmAccept').textContent = t.run;
-
-      document.querySelector('#buyDialog .dialog-header').textContent = t.buyLicense;
-      const dialogContent = document.querySelector('#buyDialog .dialog-content');
-      dialogContent.querySelector('p').textContent = t.buyDesc;
-      const featuresLi = dialogContent.querySelector('ul li');
-      featuresLi.innerHTML = `<strong>${t.features}:</strong> ${t.featuresDesc}`;
-      const priceH4 = dialogContent.querySelector('.price-board h4');
-      priceH4.textContent = t.pricing;
-      dialogContent.querySelector('p:nth-child(3)').textContent = t.contactOn;
-      dialogContent.querySelector('p:last-of-type').textContent = t.bulkContact;
-      document.getElementById('buyCancel').textContent = t.cancel;
-      document.getElementById('buyAccept').textContent = t.proceedPayment;
-    }
-
-    // Keep interactivity minimal and safe in the public UI
+    // DOM Elements
+    const buyDialogBackdrop = document.getElementById('buyDialogBackdrop');
+    const buyDialog = document.getElementById('buyDialog');
+    const buyCancel = document.getElementById('buyCancel');
     const buyNow = document.getElementById('buyNow');
     const contactSales = document.getElementById('contactSales');
     const copyBtn = document.getElementById('copyBtn');
     const commandEl = document.getElementById('command');
-    const copyStatus = document.getElementById('copyStatus');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
 
-    const buyDialogBackdrop = document.getElementById('buyDialogBackdrop');
-    const buyDialog = document.getElementById('buyDialog');
-    const buyCancel = document.getElementById('buyCancel');
-    const buyAccept = document.getElementById('buyAccept');
-
-    // Simple Dialog show/hide logic
+    // Dialog Functions
     const showDialog = (backdrop, dialog) => {
-        backdrop.style.display = 'flex';
-        // A small delay to allow CSS transition to play
-        setTimeout(() => dialog.classList.add('open'), 10);
+      backdrop.classList.add('open');
     };
+    
     const hideDialog = (backdrop, dialog) => {
-        dialog.classList.remove('open');
-        setTimeout(() => backdrop.style.display = 'none', 200); // Match transition time
+      backdrop.classList.remove('open');
     };
 
+    // Event Listeners
     buyNow.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
-
-    // Dialog actions (Buy dialog)
     buyCancel.addEventListener('click', () => hideDialog(buyDialogBackdrop, buyDialog));
-    buyAccept.addEventListener('click', () => {
-        // Open Zalo, Discord, or Telegram for contact
-        const zaloUrl = 'https://zalo.me/0938332045';
-        const discordUrl = 'https://discord.com/users/longdoz';
-        const telegramUrl = 'https://t.me/lycanld';
-        window.open(zaloUrl, '_blank');
-        window.open(discordUrl, '_blank');
-        window.open(telegramUrl, '_blank');
-        hideDialog(buyDialogBackdrop, buyDialog);
+
+    // Contact method clicks
+    document.querySelectorAll('.contact-method').forEach(method => {
+      method.addEventListener('click', function() {
+        const contactType = this.dataset.contact;
+        let contactUrl = '';
+        
+        switch(contactType) {
+          case 'zalo':
+            contactUrl = 'https://zalo.me/0938332045';
+            showToast('Opening Zalo...');
+            break;
+          case 'discord':
+            contactUrl = 'https://discord.com/users/longdoz';
+            showToast('Opening Discord profile...');
+            break;
+          case 'telegram':
+            contactUrl = 'https://t.me/lycanld';
+            showToast('Opening Telegram...');
+            break;
+        }
+        
+        // Open the contact method after a short delay
+        setTimeout(() => {
+          window.open(contactUrl, '_blank');
+        }, 500);
+      });
     });
 
+    contactSales.addEventListener('click', () => {
+      showDialog(buyDialogBackdrop, buyDialog);
+    });
 
-    contactSales.addEventListener('click', () => window.location.href = 'mailto:admin@netkillx.example');
-
-    // Copy to clipboard (copies whatever is shown in the box)
+    // Copy to clipboard with toast notification
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(commandEl.textContent);
-        copyStatus.textContent = translations[currentLang].copied;
+        showToast('Command copied to clipboard');
       } catch (e) {
-        copyStatus.textContent = translations[currentLang].copyError;
+        showToast('Unable to copy — please select the text and copy manually');
       }
-      setTimeout(() => copyStatus.textContent = translations[currentLang].copyTip, 2500);
     });
 
-    document.getElementById('menuBtn').addEventListener('click', () => alert('Menu is static in this demo.'));
+    // Toast notification function
+    function showToast(message) {
+      toastMessage.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Add fade-in animation to elements as they come into view
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
   </script>
 </body>
 </html>
