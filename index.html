@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NETKILL X — Official Web</title>
+  <link rel="icon" href="icon.png" type="image/png">
+
+  <style>
+    /* CSS Variables (from MWC theme) */
+    :root {
+      --primary: #1fb26a;
+      --accent: #ef4444;
+      --on-primary: #000000;
+      --surface: #0f1720;
+      --card-bg: #0b1220;
+      --muted: #94a3b8;
+      --text: #e6eef8;
+      --shadow-color: rgba(2, 6, 23, 0.6);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #071020 0%, #071422 100%);
+      color: var(--text);
+    }
+    
+    /* Top App Bar Replacement (.header) */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface); /* Use the surface color for the header background */
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 56px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .header-center {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+      padding-left: 16px;
+    }
+    .header-logo {
+      width: 32px;
+      height: 32px;
+      margin-right: 12px;
+      border-radius: 4px;
+    }
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+    .icon-button {
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 50%;
+      line-height: 0;
+      transition: background-color 0.15s;
+    }
+    .icon-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Layouts and Grid */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 880px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .hero {
+        align-items: stretch;
+      }
+    }
+    @media (max-width: 600px) {
+      .layout {
+        padding: 0 12px;
+        margin: 16px auto;
+      }
+      .hero {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .download-btn {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+      }
+      .card {
+        padding: 16px;
+      }
+      .hero p {
+        font-size: 1rem;
+      }
+    }
+
+    /* Card Replacement (.card) */
+    .card {
+      display: block;
+      padding: 18px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      box-shadow: 0 6px 18px var(--shadow-color);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.8);
+    }
+
+    /* Button Replacements (.button, .button-raised, .button-outlined) */
+    .button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px; /* Standard button height */
+      box-sizing: border-box;
+      white-space: nowrap;
+      font-size: 0.875rem;
+    }
+    .button-raised {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+    }
+    .button-raised:hover {
+      opacity: 0.9;
+      box-shadow: 0 4px 4px -2px rgba(0,0,0,.2), 0 3px 5px 0 rgba(0,0,0,.14), 0 2px 10px 0 rgba(0,0,0,.12);
+    }
+    .button-outlined {
+      background-color: transparent;
+      color: var(--primary);
+      border: 1px solid rgba(31, 178, 106, 0.5); /* Primary with some opacity for outline */
+    }
+    .button-outlined:hover {
+      background-color: rgba(31, 178, 106, 0.08); /* Slight primary hover background */
+    }
+
+    /* Utility Classes */
+    .monospace {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+    }
+    footer {
+      margin: 32px 0;
+      text-align: center;
+      color: var(--muted);
+    }
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    @media(max-width: 640px) {
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .download-btn {
+      display: flex;
+      gap: 8px;
+    }
+    pre.code-block {
+      background: #071019;
+      color: var(--text);
+      padding: 12px;
+      border-radius: 8px;
+      overflow: auto;
+    }
+    a {
+      color: var(--primary);
+    }
+    .code-snippet {
+      background: #051017;
+      padding: 12px;
+      border-radius: 8px;
+      color: var(--text);
+      font-family: ui-monospace, 'Roboto Mono', monospace;
+    }
+    .copy-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .copy-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+
+    /* ASCII banner */
+    .banner {
+      font-family: ui-monospace, 'Roboto Mono', monospace;
+      white-space: pre;
+      line-height: 0.9;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.01));
+      overflow-x: auto;
+      text-align: center;
+      color: var(--text);
+    }
+    .red { color: #ef4444; }
+    .blue { color: #3b82f6; }
+
+    /* Dialog Replacement (.dialog-backdrop, .dialog) */
+    .dialog-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: none; /* Hidden by default */
+      justify-content: center;
+      align-items: center;
+    }
+    .dialog {
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.9);
+      padding: 24px;
+      max-width: 700px;
+      width: 90%;
+      transform: scale(0.9);
+      opacity: 0;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .dialog.open {
+      display: flex;
+      transform: scale(1);
+      opacity: 1;
+    }
+    .dialog-header {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .dialog-content ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .dialog-content li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="header">
+    <button class="icon-button" id="menuBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </button>
+    <div class="header-center">
+      <img src="icon.png" alt="NETKILL X Logo" class="header-logo">
+      <div class="header-title">NETKILL X</div>
+    </div>
+
+  </div>
+
+  <main class="layout">
+    <pre class="banner">
+<span class="red">███    ██ ███████ ████████ ██   ██ ██ ██      ██         ██╗  ██╗
+ ████   ██ ██         ██    ██  ██  ██ ██      ██         ╚██╗██╔╝ 
+ ██ ██  ██ ███████    ██    █████   ██ ██      ██          ╚███╔╝  
+ ██  ██ ██ ██         ██    ██  ██  ██ ██      ██          ██╔██╗  
+██   ████ ███████    ██    ██   ██ ██ ███████ ███████    ██╔╝ ██╗
+                                                          ╚═╝  ╚═╝
+NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
+<span class="blue">Original NETKILL script by GWE. Continued and Upgraded as NETKILL X by Lyc4nLĐ.</span>
+</pre>
+
+    <section class="hero">
+      <div style="display:flex;justify-content:space-between;width:100%">
+        <div>
+          <p class="muted">A focused fileless tool for temporarily pausing NetSupport School client without leaving any traces. Use only on machines you own or manage.</p>
+        </div>
+        <div class="download-btn">
+          <button class="button button-outlined" id="buyKeyBtn">Buy key</button>
+          <button class="button button-raised" id="downloadBtn">Download</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <h2 style="margin-top:0">Usage — run this in PowerShell (copyable)</h2>
+          <p class="muted">Open an elevated PowerShell session (Run as Administrator) and paste the command below.</p>
+
+          <div style="margin-top:12px">
+            <label class="muted" for="command">PowerShell command</label>
+            <div class="copy-row" style="margin-top:8px">
+              <pre id="command" class="code-snippet monospace" style="flex:1;min-width:0;white-space:pre-wrap;">irm netkillx.github.io/get/ | iex</pre>
+              <div class="copy-btn" id="copyBtn" title="Copy">Copy</div>
+            </div>
+            <div id="copyStatus" class="muted" style="margin-top:8px">Tip: run inside an elevated PowerShell window.</div>
+          </div>
+
+          <div style="margin-top:14px" class="muted">You can also target the specific script file: <code class="monospace">irm netkillx.github.io/main.ps1 | iex</code></div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h2 style="margin-top:0">Features</h2>
+          <div class="feature-list">
+            <div>
+              <strong>Fileless</strong>
+              <div class="muted">Run in-memory commands without leaving files/traces behind.</div>
+            </div>
+            <div>
+              <strong>Quick Execution</strong>
+              <div class="muted">Ends the SchoolNetSupport processes quickly without notice.</div>
+            </div>
+            <div>
+              <strong>Stealthy</strong>
+              <div class="muted">Masked under "Microsoft Powerpoint" so your teacher won't notice!</div>
+            </div>
+            <div>
+              <strong>Persistant</strong>
+              <div class="muted">Automatically stops the SchoolNetSupport everytime you open the computer (optional).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h2 style="margin-top:0">Docs & Instructions</h2>
+          <ol>
+            <li>Open an elevated PowerShell session on the target machine.</li>
+            <li>Paste the command below into the elevated PowerShell session and press Enter.</li>
+            <li>Follow instructions and enjoy.</li>
+          </ol>
+          <p class="muted">This script is made for students who don't want their school's IT Guy/Teacher to monitor them, specifically targeting at SchoolNetSupport program. It could disable the process temporarily or persistantly. Use at your own risk!</p>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="card">
+          <h3 style="margin-top:0">Buy a key</h3>
+          <p class="muted">Purchase a license key to access the script!</p>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="button button-raised" id="buyNow">Buy now</button>
+            <button class="button button-outlined" id="contactSales">Contact sales</button>
+          </div>
+          <div style="margin-top:12px;color:var(--muted);font-size:13px">After purchase you will receive a key and an invoice. Keep your key secure.</div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3 style="margin-top:0">Contact</h3>
+          <p class="muted">Author: Long Do (Lyc4nLĐ)</p>
+          <p class="muted">Support: <a href="https://lycanld.github.io/" target="_blank">Project page</a></p>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div class="muted">Made by Lyc4nLĐ (Long Do). Use it at your own risk! ©️LycanLĐ 2025</div>
+    </footer>
+  </main>
+
+  <div class="dialog-backdrop" id="confirmDialogBackdrop">
+    <div class="dialog" id="confirmDialog">
+      <div class="dialog-header">Confirm action</div>
+      <div id="confirmText"></div>
+      <div class="dialog-actions">
+        <button class="button button-outlined" id="confirmCancel">Cancel</button>
+        <button class="button button-raised" id="confirmAccept">Run</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-backdrop" id="buyDialogBackdrop">
+    <div class="dialog" id="buyDialog">
+      <div class="dialog-header">Buy NETKILL X License</div>
+      <div class="dialog-content">
+        <p>Unlock premium features with a license key.</p>
+        <ul>
+          <li><strong>Features:</strong> Priority support, advanced tools, commercial use</li>
+        </ul>
+        <div class="price-board">
+          <h4>License Options</h4>
+          <ul>
+            <li>5 Day Key: 10,000 VND</li>
+            <li>30 Day Key: 60,000 VND</li>
+            <li>60 Day Key: 90,000 VND</li>
+            <li>Lifetime Key: 150,000 VND</li>
+          </ul>
+        </div>
+        <p>To purchase, contact me on:</p>
+        <ul>
+          <li><strong>Zalo:</strong> 0938332045</li>
+          <li><strong>Discord:</strong> longdoz</li>
+          <li><strong>Telegram:</strong> @lycanld</li>
+        </ul>
+        <p>Contact for bulk discounts or custom plans.</p>
+      </div>
+      <div class="dialog-actions">
+        <button class="button button-outlined" id="buyCancel">Cancel</button>
+        <button class="button button-raised" id="buyAccept">Proceed to Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Translations
+    const translations = {
+      en: {
+        title: "NETKILL X — Official Website",
+        heroDesc: "A fileless tool specifically designed to temporarily disable the NetSupport School client without leaving any traces. Use only on machines you own or manage.",
+        buyKey: "Buy key",
+        download: "Download",
+        usageTitle: "How to use — run in PowerShell",
+        usageDesc: "Open a PowerShell session and paste the command below.",
+        commandLabel: "PowerShell command",
+        copyTip: "Tip: run in PowerShell window with admin rights (if available).",
+        altCommand: "You can also run the script file directly: irm netkillx.github.io/main.ps1 | iex",
+        featuresTitle: "Key Features",
+        fileless: "Fileless (No files needed)",
+        filelessDesc: "Execute commands in memory without storing files/traces on disk.",
+        quickExec: "Fast Execution",
+        quickExecDesc: "Terminates NetSupport School processes quickly without attracting attention.",
+        stealthy: "Safe",
+        stealthyDesc: "Disguised under \"Microsoft Powerpoint\" so your teacher won't detect it!",
+        persistent: "Auto-activate (on boot)",
+        persistentDesc: "Automatically stops NetSupport School every time you turn on the computer (optional).",
+        docsTitle: "User Guide (Instructions)",
+        step1: "Open PowerShell session with admin rights on the computer.",
+        step2: "Paste the command below into the elevated PowerShell session and press Enter.",
+        step3: "Follow the instructions.",
+        docsDesc: "This script is created for students who don't want to be monitored by the school's IT staff/Teacher, specifically targeting the NetSupport School program. It can disable the process temporarily or permanently (auto-activate). Use at your own risk!",
+        buyKeyTitle: "Buy key",
+        buyKeyDesc: "Buy key to use the script!",
+        buyNow: "Buy now",
+        contactSales: "Contact",
+        buyNote: "After purchase, you will receive the activation key from the script owner. Please keep your key safe.",
+        contactTitle: "Contact",
+        author: "Script Owner/Developer: Long Do (Lyc4nLĐ)",
+        support: "Support: Github Page",
+        footer: "Created by Lyc4nLĐ (Long Do). Use at your own risk! ©️LycanLĐ 2025",
+        confirmAction: "Confirm",
+        cancel: "Cancel",
+        run: "Run",
+        buyLicense: "Buy NETKILL X License",
+        buyDesc: "Unlock premium features with a license key.",
+        features: "Features",
+        featuresDesc: "Priority support, advanced tools, commercial use",
+        pricing: "License Options",
+        contactOn: "To purchase, contact me on:",
+        bulkContact: "Contact for bulk discounts or custom plans.",
+        proceedPayment: "Proceed to Payment",
+        copied: "Command copied to clipboard",
+        copyError: "Unable to copy — please select the text and copy manually"
+      }
+    };
+
+    let currentLang = 'en';
+
+    // Apply initial language
+    updateLanguage();
+
+    function updateLanguage() {
+      const t = translations[currentLang];
+
+      // Update title
+      document.title = t.title;
+
+      // Update hero section
+      document.querySelector('.hero p').textContent = t.heroDesc;
+      document.getElementById('buyKeyBtn').textContent = t.buyKey;
+      document.getElementById('downloadBtn').textContent = t.download;
+
+      // Update usage section
+      document.querySelector('.card h2').textContent = t.usageTitle;
+      document.querySelector('.card p').textContent = t.usageDesc;
+      document.querySelector('label').textContent = t.commandLabel;
+      document.getElementById('copyStatus').textContent = t.copyTip;
+      document.querySelector('.card .muted:last-of-type').textContent = t.altCommand;
+
+      // Update features section
+      document.querySelectorAll('.card')[1].querySelector('h2').textContent = t.featuresTitle;
+      const features = document.querySelectorAll('.feature-list div');
+      features[0].querySelector('strong').textContent = t.fileless;
+      features[0].querySelector('.muted').textContent = t.filelessDesc;
+      features[1].querySelector('strong').textContent = t.quickExec;
+      features[1].querySelector('.muted').textContent = t.quickExecDesc;
+      features[2].querySelector('strong').textContent = t.stealthy;
+      features[2].querySelector('.muted').textContent = t.stealthyDesc;
+      features[3].querySelector('strong').textContent = t.persistent;
+      features[3].querySelector('.muted').textContent = t.persistentDesc;
+
+      // Update docs section
+      document.querySelectorAll('.card')[2].querySelector('h2').textContent = t.docsTitle;
+      const steps = document.querySelectorAll('ol li');
+      steps[0].textContent = t.step1;
+      steps[1].textContent = t.step2;
+      steps[2].textContent = t.step3;
+      document.querySelectorAll('.card')[2].querySelector('.muted').textContent = t.docsDesc;
+
+      // Update sidebar
+      document.querySelector('aside .card h3').textContent = t.buyKeyTitle;
+      document.querySelector('aside .card p').textContent = t.buyKeyDesc;
+      document.getElementById('buyNow').textContent = t.buyNow;
+      document.getElementById('contactSales').textContent = t.contactSales;
+      document.querySelector('aside .card .muted').textContent = t.buyNote;
+
+      document.querySelectorAll('aside .card')[1].querySelector('h3').textContent = t.contactTitle;
+      document.querySelectorAll('aside .card')[1].querySelectorAll('p')[0].textContent = t.author;
+      document.querySelectorAll('aside .card')[1].querySelectorAll('p')[1].textContent = t.support;
+
+      // Update footer
+      document.querySelector('footer .muted').textContent = t.footer;
+
+      // Update dialogs
+      document.querySelector('#confirmDialog .dialog-header').textContent = t.confirmAction;
+      document.getElementById('confirmCancel').textContent = t.cancel;
+      document.getElementById('confirmAccept').textContent = t.run;
+
+      document.querySelector('#buyDialog .dialog-header').textContent = t.buyLicense;
+      const dialogContent = document.querySelector('#buyDialog .dialog-content');
+      dialogContent.querySelector('p').textContent = t.buyDesc;
+      const featuresLi = dialogContent.querySelector('ul li');
+      featuresLi.innerHTML = `<strong>${t.features}:</strong> ${t.featuresDesc}`;
+      const priceH4 = dialogContent.querySelector('.price-board h4');
+      priceH4.textContent = t.pricing;
+      dialogContent.querySelector('p:nth-child(3)').textContent = t.contactOn;
+      dialogContent.querySelector('p:last-of-type').textContent = t.bulkContact;
+      document.getElementById('buyCancel').textContent = t.cancel;
+      document.getElementById('buyAccept').textContent = t.proceedPayment;
+    }
+
+    // Keep interactivity minimal and safe in the public UI
+    const buyNow = document.getElementById('buyNow');
+    const buyKeyBtn = document.getElementById('buyKeyBtn');
+    const contactSales = document.getElementById('contactSales');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const commandEl = document.getElementById('command');
+    const copyStatus = document.getElementById('copyStatus');
+
+    const buyDialogBackdrop = document.getElementById('buyDialogBackdrop');
+    const buyDialog = document.getElementById('buyDialog');
+    const buyCancel = document.getElementById('buyCancel');
+    const buyAccept = document.getElementById('buyAccept');
+
+    // Simple Dialog show/hide logic
+    const showDialog = (backdrop, dialog) => {
+        backdrop.style.display = 'flex';
+        // A small delay to allow CSS transition to play
+        setTimeout(() => dialog.classList.add('open'), 10);
+    };
+    const hideDialog = (backdrop, dialog) => {
+        dialog.classList.remove('open');
+        setTimeout(() => backdrop.style.display = 'none', 200); // Match transition time
+    };
+
+    buyNow.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
+    buyKeyBtn.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
+
+    // Dialog actions (Buy dialog)
+    buyCancel.addEventListener('click', () => hideDialog(buyDialogBackdrop, buyDialog));
+    buyAccept.addEventListener('click', () => {
+        // Open Zalo, Discord, or Telegram for contact
+        const zaloUrl = 'https://zalo.me/0938332045';
+        const discordUrl = 'https://discord.com/users/longdoz';
+        const telegramUrl = 'https://t.me/lycanld';
+        window.open(zaloUrl, '_blank');
+        window.open(discordUrl, '_blank');
+        window.open(telegramUrl, '_blank');
+        hideDialog(buyDialogBackdrop, buyDialog);
+    });
+
+
+    contactSales.addEventListener('click', () => window.location.href = 'mailto:admin@netkillx.example');
+    downloadBtn.addEventListener('click', () => window.open('https://github.com/lycanld/netkillx/releases', '_blank'));
+
+    // Copy to clipboard (copies whatever is shown in the box)
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(commandEl.textContent);
+        copyStatus.textContent = translations[currentLang].copied;
+      } catch (e) {
+        copyStatus.textContent = translations[currentLang].copyError;
+      }
+      setTimeout(() => copyStatus.textContent = translations[currentLang].copyTip, 2500);
+    });
+
+    document.getElementById('menuBtn').addEventListener('click', () => alert('Menu is static in this demo.'));
+  </script>
+</body>
+</html>
