@@ -1,37 +1,101 @@
 # --- Configuration ---
-$DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download/2.0/main.exe"
-$FileName    = "main.exe"
+ $DownloadUrl = "https://github.com/NetKillX/netkillx.github.io/releases/download/2.1/main.exe"
+ $FileName    = "main.exe"
+ $AppName     = "NETKILL X"
+ $Version     = "2.1"
 # ---------------------
+
+# Display banner
+function Show-Banner {
+    Clear-Host
+    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║                                                              ║" -ForegroundColor Cyan
+    Write-Host "║                        NETKILL X LOADER                      ║" -ForegroundColor Cyan
+    Write-Host "║                                                              ║" -ForegroundColor Cyan
+    Write-Host "║  Version: $Version $(Get-Padding -Length (40 - $Version.Length))          ║" -ForegroundColor Cyan
+    Write-Host "║  Author:  NetKillX                                           ║" -ForegroundColor Cyan
+    Write-Host "║  GitHub:  https://github.com/NetKillX                        ║" -ForegroundColor Cyan
+    Write-Host "║                                                              ║" -ForegroundColor Cyan
+    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+}
+
+# Helper function for padding
+function Get-Padding {
+    param([int]$Length)
+    return " " * $Length
+}
+
+# Display progress
+function Show-Progress {
+    param(
+        [string]$Activity,
+        [string]$Status,
+        [int]$PercentComplete
+    )
+    Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentComplete
+}
 
 # The entire logic is wrapped in a self-invoking script block (& { ... }) for clean execution.
 & {
+    Show-Banner
+    
     $TempDir = "$env:TEMP"
     # Local path for the cached executable
     $ExePath = Join-Path -Path $TempDir -ChildPath $FileName
     $ExitCode = 0
-    
-    Write-Host "Local cache path: $ExePath" -ForegroundColor DarkGray
+   
     
     # --- Caching and Download Logic ---
     if (Test-Path $ExePath) {
-        Write-Host "✅ Found cached. Skipping download." -ForegroundColor Green
+        Write-Host "✅ Found cached version. Skipping download." -ForegroundColor Green
+        
+        # Check if we should verify the version
+        $FileDate = (Get-Item $ExePath).LastWriteTime
+        $DaysOld = (Get-Date) - $FileDate
+        
+        if ($DaysOld.Days -gt 7) {
+            Write-Host "⚠️  Warning: Cached version is $($DaysOld.Days) days old. Consider updating." -ForegroundColor Yellow
+            Write-Host ""
+        }
     }
     else {
         # File not found, proceed with download
-        $WebClient = New-Object System.Net.WebClient
+        Write-Host "🔍 Starting download from GitHub..." -ForegroundColor Cyan
+        Write-Host "Source: $DownloadUrl" -ForegroundColor DarkGray
+        Write-Host ""
         
-        Write-Host "Starting download from $DownloadUrl..." -ForegroundColor Cyan
-
         try {
             # FIX: Correct type name is [Net.SecurityProtocolType]
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
             
+            # Create a web client with progress tracking
+            $WebClient = New-Object System.Net.WebClient
+            
+            # Register download progress event
+            Register-ObjectEvent -InputObject $WebClient -EventName DownloadProgressChanged -Action {
+                $Percent = $Event.SourceEventArgs.ProgressPercentage
+                Show-Progress -Activity "Downloading $AppName" -Status "Downloading... $Percent% Complete" -PercentComplete $Percent
+            } | Out-Null
+            
+            # Register download completed event
+            Register-ObjectEvent -InputObject $WebClient -EventName DownloadFileCompleted -Action {
+                Show-Progress -Activity "Downloading $AppName" -Status "Download Complete!" -PercentComplete 100 -Completed
+            } | Out-Null
+            
             # Download the file
             $WebClient.DownloadFile($DownloadUrl, $ExePath)
-            Write-Host "Download complete. File saved to: $ExePath" -ForegroundColor Green
+            
+            # Clean up event handlers
+            Get-EventSubscriber | Where-Object {$_.SourceObject -eq $WebClient} | Unregister-Event
+            
+            Write-Host ""
+            Write-Host "✅ Download complete. File saved to: $ExePath" -ForegroundColor Green
         }
         catch {
-            Write-Host "An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host ""
+            Write-Host "❌ An error occurred during download: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Please check your internet connection and try again." -ForegroundColor Red
             # Exit the script block on download failure
             return 
         }
@@ -39,24 +103,38 @@ $FileName    = "main.exe"
 
     # --- Execution Logic ---
     if (Test-Path $ExePath) {
-        Write-Host "Executing NETKILL X in the current terminal..." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "🚀 Starting $AppName in the current terminal..." -ForegroundColor Yellow
+        Write-Host ""
         
         try {
             # Use the call operator (&) to execute the file
             & $ExePath
             $ExitCode = $LASTEXITCODE
-            Write-Host "Script execution finished. Exit Code: $ExitCode" -ForegroundColor Green
+            
+            Write-Host ""
+            if ($ExitCode -eq 0) {
+                Write-Host "✅ $AppName executed successfully. Exit Code: $ExitCode" -ForegroundColor Green
+            }
+            else {
+                Write-Host "⚠️  $AppName finished with warnings. Exit Code: $ExitCode" -ForegroundColor Yellow
+            }
         }
         catch {
-            Write-Host "An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host ""
+            Write-Host "❌ An error occurred during execution: $($_.Exception.Message)" -ForegroundColor Red
             $ExitCode = 1
         }
     }
     else {
-        Write-Host "Cannot execute. The script was not found." -ForegroundColor Red
+        Write-Host ""
+        Write-Host "❌ Cannot execute. The script was not found at: $ExePath" -ForegroundColor Red
         $ExitCode = 1
     }
 
     # Return the program's exit code to the shell
+    Write-Host ""
+    Write-Host "Press any key to exit..." -ForegroundColor Gray
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit $ExitCode
 }
