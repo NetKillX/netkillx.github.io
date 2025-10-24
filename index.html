@@ -327,14 +327,8 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 </pre>
 
     <section class="hero">
-      <div style="display:flex;justify-content:space-between;width:100%">
-        <div>
-          <p class="muted">A focused fileless tool for temporarily pausing NetSupport School client without leaving any traces. Use only on machines you own or manage.</p>
-        </div>
-        <div class="download-btn">
-          <button class="button button-outlined" id="buyKeyBtn">Buy key</button>
-          <button class="button button-raised" id="downloadBtn">Download</button>
-        </div>
+      <div>
+        <p class="muted">A focused fileless tool for temporarily pausing NetSupport School client without leaving any traces. Use only on machines you own or manage.</p>
       </div>
     </section>
 
@@ -586,9 +580,7 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 
     // Keep interactivity minimal and safe in the public UI
     const buyNow = document.getElementById('buyNow');
-    const buyKeyBtn = document.getElementById('buyKeyBtn');
     const contactSales = document.getElementById('contactSales');
-    const downloadBtn = document.getElementById('downloadBtn');
     const copyBtn = document.getElementById('copyBtn');
     const commandEl = document.getElementById('command');
     const copyStatus = document.getElementById('copyStatus');
@@ -610,7 +602,6 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
     };
 
     buyNow.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
-    buyKeyBtn.addEventListener('click', () => showDialog(buyDialogBackdrop, buyDialog));
 
     // Dialog actions (Buy dialog)
     buyCancel.addEventListener('click', () => hideDialog(buyDialogBackdrop, buyDialog));
@@ -627,7 +618,6 @@ NETSUPPORT SCHOOL CLIENT KILLER - v2.1 - By Lyc4nLĐ</span>
 
 
     contactSales.addEventListener('click', () => window.location.href = 'mailto:admin@netkillx.example');
-    downloadBtn.addEventListener('click', () => window.open('https://github.com/lycanld/netkillx/releases', '_blank'));
 
     // Copy to clipboard (copies whatever is shown in the box)
     copyBtn.addEventListener('click', async () => {
