@@ -194,8 +194,5 @@ function Get-RemoteFileInfo {
     }
 
     # Return the program's exit code to the shell
-    Write-Host ""
-    Write-Host "Press any key to exit..." -ForegroundColor Gray
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit $ExitCode
 }
