@@ -36,31 +36,6 @@ function Show-Progress {
     Write-Progress -Activity $Activity -Status $Status -PercentComplete $PercentComplete
 }
 
-# Function to calculate file hash
-function Get-FileHash {
-    param(
-        [string]$FilePath,
-        [string]$Algorithm = "SHA256"
-    )
-    
-    try {
-        $FileStream = [System.IO.File]::OpenRead($FilePath)
-        $Hash = [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm).ComputeHash($FileStream)
-        $FileStream.Close()
-        
-        $StringBuilder = New-Object System.Text.StringBuilder
-        foreach ($Byte in $Hash) {
-            $null = $StringBuilder.Append($Byte.ToString("x2"))
-        }
-        
-        return $StringBuilder.ToString()
-    }
-    catch {
-        Write-Host "Error calculating hash: $($_.Exception.Message)" -ForegroundColor Red
-        return $null
-    }
-}
-
 # Function to get remote file info
 function Get-RemoteFileInfo {
     param([string]$Url)
@@ -109,7 +84,6 @@ function Get-RemoteFileInfo {
         # Get local file info
         $LocalFileInfo = Get-Item $ExePath
         $LocalSize = $LocalFileInfo.Length
-        $LocalHash = Get-FileHash -FilePath $ExePath
         
         # Get remote file info
         Write-Host "🔍 Checking remote file information..." -ForegroundColor Cyan
@@ -119,48 +93,20 @@ function Get-RemoteFileInfo {
             Write-Host "Local file size: $LocalSize bytes" -ForegroundColor Gray
             Write-Host "Remote file size: $($RemoteFileInfo.Size) bytes" -ForegroundColor Gray
             
-            # Compare file sizes first (quicker check)
+            # Compare file sizes
             if ($LocalSize -ne $RemoteFileInfo.Size) {
                 Write-Host "⚠️  File sizes differ. Update required." -ForegroundColor Yellow
                 $ShouldDownload = $true
             }
             else {
-                Write-Host "✅ File sizes match. Verifying integrity..." -ForegroundColor Green
+                Write-Host "✅ File sizes match. Using cached version." -ForegroundColor Green
                 
-                # If sizes match, download a small portion to calculate hash
-                try {
-                    Write-Host "🔍 Calculating remote file hash for verification..." -ForegroundColor Cyan
-                    
-                    # Download just enough to calculate hash
-                    $TempHashPath = Join-Path -Path $TempDir -ChildPath "$FileName.hash"
-                    $WebClient = New-Object System.Net.WebClient
-                    $WebClient.DownloadFile($DownloadUrl, $TempHashPath)
-                    
-                    $RemoteHash = Get-FileHash -FilePath $TempHashPath
-                    Remove-Item $TempHashPath -Force
-                    
-                    Write-Host "Local file hash: $LocalHash" -ForegroundColor Gray
-                    Write-Host "Remote file hash: $RemoteHash" -ForegroundColor Gray
-                    
-                    if ($LocalHash -ne $RemoteHash) {
-                        Write-Host "⚠️  File hashes differ. Update required." -ForegroundColor Yellow
-                        $ShouldDownload = $true
-                    }
-                    else {
-                        Write-Host "✅ File verified. Using cached version." -ForegroundColor Green
-                        
-                        # Check if we should warn about file age
-                        $FileDate = $LocalFileInfo.LastWriteTime
-                        $DaysOld = (Get-Date) - $FileDate
-                        
-                        if ($DaysOld.Days -gt 7) {
-                            Write-Host "⚠️  Warning: Cached version is $($DaysOld.Days) days old. Consider updating." -ForegroundColor Yellow
-                        }
-                    }
-                }
-                catch {
-                    Write-Host "❌ Error during hash verification: $($_.Exception.Message)" -ForegroundColor Red
-                    Write-Host "Proceeding with cached version." -ForegroundColor Yellow
+                # Check if we should warn about file age
+                $FileDate = $LocalFileInfo.LastWriteTime
+                $DaysOld = (Get-Date) - $FileDate
+                
+                if ($DaysOld.Days -gt 7) {
+                    Write-Host "⚠️  Warning: Cached version is $($DaysOld.Days) days old. Consider updating." -ForegroundColor Yellow
                 }
             }
         }
